@@ -1,20 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 20px; background-color: var(--tg-theme-bg-color); color: var(--tg-theme-text-color); }
-        .loader { font-size: 20px; font-weight: bold; }
-        .instruction { margin-top: 20px; font-size: 16px; color: #3390ec; }
+        body { font-family: sans-serif; text-align: center; padding: 20px; background-color: #212121; color: white; }
+        .box { background: #333; padding: 15px; border-radius: 10px; margin-top: 15px; word-break: break-all; }
+        button { background: #e53935; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-size: 16px; margin-top: 20px; cursor: pointer;}
     </style>
 </head>
 <body>
-    <div class="loader" id="status">🔍 Obteniendo tu IP...</div>
-    <div class="instruction" id="hint" style="display:none;">
-        ✅ ¡Hecho!<br><br>
-        1. Se abrirá el chat.<br>
-        2. Pulsa el botón <b>ENVIAR</b> (✈️).
-    </div>
+    <h3>🔍 Diagnóstico</h3>
+    <div id="status">Detectando IP...</div>
+    
+    <div class="box" id="debug-url">Esperando...</div>
+
+    <button onclick="window.Telegram.WebApp.close()">⚠️ Forzar Cierre</button>
 
     <script>
         const tg = window.Telegram.WebApp;
@@ -24,25 +25,30 @@
             .then(response => response.json())
             .then(data => {
                 const userIp = data.ip;
-                
-                // Mostramos instrucciones visuales
                 document.getElementById('status').innerText = "✅ IP: " + userIp;
-                document.getElementById('hint').style.display = 'block';
                 
+                // ---------------------------------------------------------
+                // 🛑 ¡AQUÍ ESTÁ EL PUNTO CRÍTICO! REVISA ESTA LÍNEA 🛑
+                // Tienes que borrar "AQUI_TU_BOT" y poner el tuyo.
+                // NO pongas la @. Solo el nombre.
+                // ---------------------------------------------------------
+                const botName = "aaz_adviser_bot"; 
+                
+                // Generamos la URL
+                const finalUrl = "https://t.me/" + botName + "?start=" + userIp;
+                
+                // LA MOSTRAMOS EN PANTALLA PARA QUE VEAS SI ESTÁ BIEN
+                document.getElementById('debug-url').innerText = finalUrl;
+
                 setTimeout(function() {
-                    // ⚠️ IMPORTANTE: REVISA QUE ESTE SEA TU BOT ⚠️
-                    const botName = "aaz_adviser_bot"; 
-                    
-                    // 1. Abrimos el enlace (Escribe el mensaje pero NO lo envía)
-                    tg.openTelegramLink("https://t.me/" + botName + "?start=" + userIp);
-                    
-                    // 2. FORZAMOS EL CIERRE DE LA VENTANA
+                    // Intentamos abrir
+                    tg.openTelegramLink(finalUrl);
+                    // Intentamos cerrar
                     tg.close();
-                    
-                }, 1000);
+                }, 2000); // Le doy 2 segundos para que te dé tiempo a leer la URL
             })
             .catch(error => {
-                document.getElementById('status').innerText = "❌ Error detectando IP";
+                document.getElementById('status').innerText = "❌ Error: " + error.message;
             });
     </script>
 </body>
