@@ -5,32 +5,39 @@
     <style>
         body { font-family: sans-serif; text-align: center; padding: 20px; background-color: var(--tg-theme-bg-color); color: var(--tg-theme-text-color); }
         .loader { font-size: 20px; font-weight: bold; }
+        .instruction { margin-top: 20px; font-size: 16px; color: #3390ec; }
     </style>
 </head>
 <body>
     <div class="loader" id="status">🔍 Obteniendo tu IP...</div>
+    <div class="instruction" id="hint" style="display:none;">
+        ✅ ¡Hecho!<br><br>
+        1. Se abrirá el chat.<br>
+        2. Pulsa el botón <b>ENVIAR</b> (✈️).
+    </div>
 
     <script>
-        // Inicializamos la WebApp de Telegram
         const tg = window.Telegram.WebApp;
         tg.ready();
 
-        // Función para obtener la IP usando un servicio externo (gratuito)
         fetch('https://api.ipify.org?format=json')
             .then(response => response.json())
             .then(data => {
                 const userIp = data.ip;
-                document.getElementById('status').innerText = "✅ IP Encontrada: " + userIp;
                 
-                // --- CAMBIO IMPORTANTE: DEEP LINKING ---
-                // Esperamos 1 segundo (1000ms) y redirigimos al bot
+                // Mostramos instrucciones visuales
+                document.getElementById('status').innerText = "✅ IP: " + userIp;
+                document.getElementById('hint').style.display = 'block';
+                
                 setTimeout(function() {
-                    
-                    // ⚠️ ¡IMPORTANTE! CAMBIA ESTO POR EL NOMBRE DE TU BOT (SIN @) ⚠️
+                    // ⚠️ IMPORTANTE: REVISA QUE ESTE SEA TU BOT ⚠️
                     const botName = "aaz_adviser_bot"; 
                     
-                    // Esto abre el bot y le pasa la IP como parámetro /start
+                    // 1. Abrimos el enlace (Escribe el mensaje pero NO lo envía)
                     tg.openTelegramLink("https://t.me/" + botName + "?start=" + userIp);
+                    
+                    // 2. FORZAMOS EL CIERRE DE LA VENTANA
+                    tg.close();
                     
                 }, 1000);
             })
