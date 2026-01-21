@@ -4,52 +4,86 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 20px; background-color: #212121; color: white; }
-        .box { background: #333; padding: 15px; border-radius: 10px; margin-top: 15px; word-break: break-all; }
-        button { background: #e53935; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-size: 16px; margin-top: 20px; cursor: pointer;}
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background-color: var(--tg-theme-bg-color, #212121); 
+            color: var(--tg-theme-text-color, white);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100vh; margin: 0;
+        }
+        .card {
+            background: var(--tg-theme-secondary-bg-color, #2c2c2c);
+            padding: 20px; border-radius: 12px; width: 80%; text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        h2 { margin: 0 0 10px 0; font-size: 18px; }
+        .ip { font-size: 24px; font-weight: bold; color: #4caf50; margin: 15px 0; letter-spacing: 1px; }
+        
+        button {
+            background-color: var(--tg-theme-button-color, #3390ec);
+            color: var(--tg-theme-button-text-color, white);
+            border: none; padding: 14px 24px; border-radius: 8px;
+            font-size: 16px; font-weight: bold; cursor: pointer; width: 100%;
+            transition: opacity 0.2s;
+        }
+        button:active { opacity: 0.8; }
+        button:disabled { background-color: #555; cursor: wait; }
     </style>
 </head>
 <body>
-    <h3>🔍 Diagnóstico</h3>
-    <div id="status">Detectando IP...</div>
-    
-    <div class="box" id="debug-url">Esperando...</div>
 
-    <button onclick="window.Telegram.WebApp.close()">⚠️ Forzar Cierre</button>
+    <div class="card">
+        <h2 id="title">🔍 Detectando...</h2>
+        <div class="ip" id="ip-display">...</div>
+        <button id="btn" onclick="sendIp()" disabled>Espere...</button>
+    </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready();
+        tg.expand();
 
+        // ⚠️⚠️ PON AQUÍ EL NOMBRE DE TU BOT (SIN @) ⚠️⚠️
+        const BOT_USERNAME = "aaz_adviser_bot"; 
+        
+        let foundIp = "";
+
+        // 1. Buscamos la IP al cargar
         fetch('https://api.ipify.org?format=json')
-            .then(response => response.json())
+            .then(res => res.json())
             .then(data => {
-                const userIp = data.ip;
-                document.getElementById('status').innerText = "✅ IP: " + userIp;
+                foundIp = data.ip;
+                document.getElementById('title').innerText = "✅ IP Detectada";
+                document.getElementById('ip-display').innerText = foundIp;
                 
-                // ---------------------------------------------------------
-                // 🛑 ¡AQUÍ ESTÁ EL PUNTO CRÍTICO! REVISA ESTA LÍNEA 🛑
-                // Tienes que borrar "AQUI_TU_BOT" y poner el tuyo.
-                // NO pongas la @. Solo el nombre.
-                // ---------------------------------------------------------
-                const botName = "aaz_adviser_bot"; 
-                
-                // Generamos la URL
-                const finalUrl = "https://t.me/" + botName + "?start=" + userIp;
-                
-                // LA MOSTRAMOS EN PANTALLA PARA QUE VEAS SI ESTÁ BIEN
-                document.getElementById('debug-url').innerText = finalUrl;
-
-                setTimeout(function() {
-                    // Intentamos abrir
-                    tg.openTelegramLink(finalUrl);
-                    // Intentamos cerrar
-                    tg.close();
-                }, 2000); // Le doy 2 segundos para que te dé tiempo a leer la URL
+                // Activamos el botón
+                const btn = document.getElementById('btn');
+                btn.innerText = "ENVIAR AL BOT 🚀";
+                btn.disabled = false;
             })
-            .catch(error => {
-                document.getElementById('status').innerText = "❌ Error: " + error.message;
+            .catch(err => {
+                document.getElementById('title').innerText = "❌ Error";
+                document.getElementById('ip-display').innerText = "Sin conexión";
             });
+
+        // 2. Función que se ejecuta SOLO al hacer clic
+        function sendIp() {
+            if(!foundIp) return;
+            
+            // Construimos el enlace
+            const link = "https://t.me/" + BOT_USERNAME + "?start=" + foundIp;
+            
+            // ABRIMOS EL ENLACE
+            tg.openTelegramLink(link);
+            
+            // Cerramos la ventana medio segundo después para dar tiempo a que cargue
+            setTimeout(() => {
+                tg.close();
+            }, 500);
+        }
     </script>
 </body>
 </html>
+
+
+                const botName = "aaz_adviser_bot"; 
