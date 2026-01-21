@@ -22,8 +22,17 @@
                 const userIp = data.ip;
                 document.getElementById('status').innerText = "✅ IP Encontrada: " + userIp;
                 
-                // MAGIA: Enviamos la IP de vuelta al Bot
-                tg.sendData(userIp);
+                // --- CAMBIO IMPORTANTE: DEEP LINKING ---
+                // Esperamos 1 segundo (1000ms) y redirigimos al bot
+                setTimeout(function() {
+                    
+                    // ⚠️ ¡IMPORTANTE! CAMBIA ESTO POR EL NOMBRE DE TU BOT (SIN @) ⚠️
+                    const botName = "AQUI_PON_EL_NOMBRE_DE_TU_BOT"; 
+                    
+                    // Esto abre el bot y le pasa la IP como parámetro /start
+                    tg.openTelegramLink("https://t.me/" + botName + "?start=" + userIp);
+                    
+                }, 1000);
             })
             .catch(error => {
                 document.getElementById('status').innerText = "❌ Error detectando IP";
