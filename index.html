@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 20px; background-color: var(--tg-theme-bg-color); color: var(--tg-theme-text-color); }
+        .loader { font-size: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="loader" id="status">🔍 Obteniendo tu IP...</div>
+
+    <script>
+        // Inicializamos la WebApp de Telegram
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+
+        // Función para obtener la IP usando un servicio externo (gratuito)
+        fetch('https://api.ipify.org?format=json')
+            .then(response => response.json())
+            .then(data => {
+                const userIp = data.ip;
+                document.getElementById('status').innerText = "✅ IP Encontrada: " + userIp;
+                
+                // MAGIA: Enviamos la IP de vuelta al Bot
+                tg.sendData(userIp);
+            })
+            .catch(error => {
+                document.getElementById('status').innerText = "❌ Error detectando IP";
+            });
+    </script>
+</body>
+</html>
