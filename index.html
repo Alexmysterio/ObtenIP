@@ -13,29 +13,29 @@
         }
         .card {
             background: var(--tg-theme-secondary-bg-color, #2c2c2c);
-            padding: 20px; border-radius: 12px; width: 80%; text-align: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            padding: 20px; border-radius: 12px; width: 85%; text-align: center;
         }
-        h2 { margin: 0 0 10px 0; font-size: 18px; }
-        .ip { font-size: 24px; font-weight: bold; color: #4caf50; margin: 15px 0; letter-spacing: 1px; }
+        .ip { font-size: 26px; font-weight: bold; color: #4caf50; margin: 15px 0; }
         
         button {
             background-color: var(--tg-theme-button-color, #3390ec);
             color: var(--tg-theme-button-text-color, white);
-            border: none; padding: 14px 24px; border-radius: 8px;
-            font-size: 16px; font-weight: bold; cursor: pointer; width: 100%;
-            transition: opacity 0.2s;
+            border: none; padding: 16px; border-radius: 8px;
+            font-size: 18px; font-weight: bold; cursor: pointer; width: 100%;
+            margin-bottom: 10px;
         }
-        button:active { opacity: 0.8; }
-        button:disabled { background-color: #555; cursor: wait; }
+        a { color: #888; text-decoration: none; font-size: 12px; display: block; margin-top: 10px;}
     </style>
 </head>
 <body>
 
     <div class="card">
-        <h2 id="title">🔍 Detectando...</h2>
+        <h3>🔍 Tu IP es:</h3>
         <div class="ip" id="ip-display">...</div>
-        <button id="btn" onclick="sendIp()" disabled>Espere...</button>
+        
+        <button id="btn" onclick="executeForceOpen()" disabled>🚀 ENVIAR AL BOT</button>
+        
+        <a id="backup-link" href="#" target="_blank">¿No funciona? Pulsa aquí</a>
     </div>
 
     <script>
@@ -43,43 +43,51 @@
         tg.ready();
         tg.expand();
 
-        // ⚠️⚠️ PON AQUÍ EL NOMBRE DE TU BOT (SIN @) ⚠️⚠️
+        // ⚠️⚠️ PON AQUÍ TU BOT (SIN @) ⚠️⚠️
         const BOT_USERNAME = "aaz_adviser_bot"; 
         
         let foundIp = "";
+        let finalLink = "";
 
-        // 1. Buscamos la IP al cargar
+        // 1. Obtener IP
         fetch('https://api.ipify.org?format=json')
             .then(res => res.json())
             .then(data => {
                 foundIp = data.ip;
-                document.getElementById('title').innerText = "✅ IP Detectada";
                 document.getElementById('ip-display').innerText = foundIp;
+                
+                // Preparamos el enlace NATIVO (tg://) que suele funcionar mejor que https://
+                finalLink = "tg://resolve?domain=" + BOT_USERNAME + "&start=" + foundIp;
                 
                 // Activamos el botón
                 const btn = document.getElementById('btn');
-                btn.innerText = "ENVIAR AL BOT 🚀";
                 btn.disabled = false;
-            })
-            .catch(err => {
-                document.getElementById('title').innerText = "❌ Error";
-                document.getElementById('ip-display').innerText = "Sin conexión";
+                
+                // Activamos el enlace de texto de respaldo
+                const aLink = document.getElementById('backup-link');
+                aLink.href = finalLink;
             });
 
-        // 2. Función que se ejecuta SOLO al hacer clic
-        function sendIp() {
+        // 2. Función de Fuerza Bruta
+        function executeForceOpen() {
             if(!foundIp) return;
             
-            // Construimos el enlace
-            const link = "https://t.me/" + BOT_USERNAME + "?start=" + foundIp;
-            
-            // ABRIMOS EL ENLACE
-            tg.openTelegramLink(link);
-            
-            // Cerramos la ventana medio segundo después para dar tiempo a que cargue
+            document.getElementById('btn').innerText = "🔄 Abriendo...";
+
+            // INTENTO 1: Usando la API de Telegram WebApp
+            try {
+                tg.openTelegramLink(finalLink);
+            } catch(e) { console.log(e); }
+
+            // INTENTO 2: Redirección estándar de JavaScript (Fallback)
+            setTimeout(() => {
+                window.location.href = finalLink;
+            }, 100);
+
+            // 3. Cierre retardado (Solo cerramos si el usuario ha salido ya)
             setTimeout(() => {
                 tg.close();
-            }, 500);
+            }, 2000);
         }
     </script>
 </body>
